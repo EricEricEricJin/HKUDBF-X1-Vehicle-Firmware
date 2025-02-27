@@ -5,7 +5,7 @@
 
 #define COMM_RECV_TABLE_MAX_SIZE 10
 
-typedef int32_t (*recv_handle_callback_t)(uint8_t *buff, uint16_t len);
+typedef void (*recv_handle_callback_t)(uint8_t *buff, uint16_t len);
 
 typedef struct communicate_recv_cmd *communicate_recv_cmd_t;
 struct communicate_recv_cmd

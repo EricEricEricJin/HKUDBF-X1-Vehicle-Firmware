@@ -26,7 +26,7 @@ void transceiver_init(transceiver_t trans,
 
     trans->unpack_state = STATE_SOF;
 
-    SET_BOARD_LED_OFF();
+    // SET_BOARD_LED_OFF();
 }
 
 void data_unpack(transceiver_t trans, frame_header_t header_ptr, uint8_t* payload_ptr)
@@ -41,7 +41,7 @@ void transceiver_unpack_fifo_data(transceiver_t trans)
 
     while (fifo_s_used(p_fifo))
     {
-        SET_BOARD_LED_ON();
+        // SET_BOARD_LED_ON();
         byte = fifo_s_get(p_fifo);
         
         switch (trans->unpack_state)

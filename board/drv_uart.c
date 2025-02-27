@@ -88,6 +88,7 @@ void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
     if (huart->Instance == USART1)
     {
         usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_DMA_HALF);
+        HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
     }
     return;
 }
@@ -102,6 +103,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     if (huart->Instance == USART1)
     {
         usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_DMA_ALL);
+        HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
     }
     return;
 }

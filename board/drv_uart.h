@@ -26,9 +26,9 @@
 #include "sys.h"
 #include "fifo.h"
 
-#define USART1_RX_BUFFER_SIZE (512)
-#define USART1_TX_BUFFER_SIZE (512)
-#define USART1_TX_FIFO_SIZE (1024)
+#define USART1_RX_BUFFER_SIZE (32)
+#define USART1_TX_BUFFER_SIZE (32)
+#define USART1_TX_FIFO_SIZE (32)
 
 typedef uint32_t (*usart_call_back_t)(uint8_t *buf, uint16_t len);
 

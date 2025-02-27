@@ -48,9 +48,11 @@ void services_task(void const *argument)
     task_init();
 
     // print log
+    // xTaskCreate()
 
     for (;;)
     {
         osDelay(1);
+
     }
 }

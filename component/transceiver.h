@@ -1,12 +1,6 @@
 #ifndef __TRANSCEIVER_H__
 #define __TRANSCEIVER_H__
 
-/**
- * Transceiver Format::
- * offset, len, val
- *
- */
-
 // #include "usart.h"
 #include "drv_uart.h"
 #include "main.h"

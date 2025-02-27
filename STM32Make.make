@@ -116,6 +116,7 @@ Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
 Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 algorithm/crc16.c \
 algorithm/crc8.c \
+algorithm/pid.c \
 application/communicate_task.c \
 application/init.c \
 application/plane.c \
@@ -125,6 +126,7 @@ board/board.c \
 board/drv_io.c \
 board/drv_uart.c \
 component/gps.c \
+component/servo.c \
 component/transceiver.c \
 support/fifo.c
 

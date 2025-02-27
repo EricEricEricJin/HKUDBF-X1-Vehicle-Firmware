@@ -16,6 +16,7 @@ void pwm_device_init(void)
     // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
 }
 
+
 void pwm_set_value(uint32_t* ccr_ptr, uint32_t value)
 {
     *ccr_ptr = value;
