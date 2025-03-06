@@ -30,7 +30,7 @@ osThreadId_t sensor_task_id;
 osThreadAttr_t sensor_task_attr = {
     .name = "SENSOR_TASK",
     .priority = osPriorityNormal,
-    .stack_size = 512,
+    .stack_size = 1024,
 };
 
 void hw_init()
@@ -49,7 +49,7 @@ void task_init()
 
     communicate_task_id = osThreadNew(communicate_task, NULL, &communicate_task_attr);
     plane_task_id = osThreadNew(plane_task, NULL, &plane_task_attr);
-    // sensor_task_id = osThreadNew(sensor_task, NULL, &sensor_task_attr);
+    sensor_task_id = osThreadNew(sensor_task, NULL, &sensor_task_attr);
     // log_i(sensor_task_id);
 }
 

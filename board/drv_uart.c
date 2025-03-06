@@ -68,18 +68,7 @@ void usart1_manage_init(void)
     fifo_s_init(&(usart1_manage_obj.tx_fifo), usart1_tx_fifo_buff, USART1_TX_FIFO_SIZE);
 
     HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
-    // HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
-    // __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);    // even rxbuf not full, will flush into fifo! Nice
 }
-
-// void USART1_IRQHandler(void)
-// {
-//     HAL_UART_IRQHandler(&huart1);
-//       if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE))
-//   {
-// 	  HAL_UART_RxCpltCallback(&huart1);
-//   }
-// }    
 
 void usart3_manage_init(void)
 {
@@ -95,8 +84,7 @@ void usart3_manage_init(void)
 
     fifo_s_init(&(usart3_manage_obj.tx_fifo), usart3_tx_fifo_buff, USART3_TX_FIFO_SIZE);
 
-    HAL_UART_Receive_DMA(&huart3, usart3_rx_buff, USART3_RX_BUFFER_SIZE);
-    // __HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE);
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart3, usart3_rx_buff, USART3_RX_BUFFER_SIZE);
 }
 
 void usart1_transmit(uint8_t *buff, uint16_t len)
@@ -113,58 +101,18 @@ void usart3_transmit(uint8_t *buff, uint16_t len)
 void usart1_rx_callback_register(usart_call_back_t fun)
 {
     usart_rx_callback_register(&usart1_manage_obj, fun);
-    return;
 }
 
 void usart3_rx_callback_register(usart_call_back_t fun)
 {
     usart_rx_callback_register(&usart3_manage_obj, fun);
-    return;
 }
 
-// callback
-
-/********************** Usual API **********************************************/
-/**
- * @brief  register uart callback function.
- * @param
- * @retval void
- */
 void usart_rx_callback_register(usart_manage_obj_t *m_obj, usart_call_back_t fun)
 {
     m_obj->call_back_f = fun;
-    return;
 }
 
-// /**
-//  * @brief  rx dma half complete interupt
-//  * @param
-//  * @retval void
-//  */
-// void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
-// {
-//     if (huart->Instance == USART1)
-//     {
-//         usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_DMA_HALF);
-//         HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
-//     }
-//     return;
-// }
-
-// /**
-//  * @brief  rx dma complete interupt
-//  * @param
-//  * @retval void
-//  */
-// void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-// {
-//     if (huart->Instance == USART1)
-//     {
-//         usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_DMA_ALL);
-//         HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
-//     }
-//     return;
-// }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
@@ -173,7 +121,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_UART);
         // HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
     }
-    return;
 }
 
 
