@@ -78,6 +78,7 @@ C_SOURCES =  \
 Core/Src/app_freertos.c \
 Core/Src/dma.c \
 Core/Src/gpio.c \
+Core/Src/i2c.c \
 Core/Src/main.c \
 Core/Src/stm32g4xx_hal_msp.c \
 Core/Src/stm32g4xx_hal_timebase_tim.c \
@@ -96,6 +97,8 @@ Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ex.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c \
+Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_i2c.c \
+Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_i2c_ex.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr_ex.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc.c \
@@ -125,6 +128,7 @@ application/sensor_task.c \
 board/board.c \
 board/drv_io.c \
 board/drv_uart.c \
+component/bmp280.c \
 component/gps.c \
 component/servo.c \
 component/transceiver.c \

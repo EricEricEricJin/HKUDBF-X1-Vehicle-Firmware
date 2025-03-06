@@ -19,7 +19,7 @@
 #define LED_RR_CCR (&TIM3->CCR4)
 
 void pwm_device_init();
-void pwm_set_value(uint32_t* ccr_ptr, uint32_t value);
-void pwm_set_width(uint32_t* ccr_ptr, uint32_t width_us);
+void pwm_set_value(volatile uint32_t* ccr_ptr, uint32_t value);
+void pwm_set_width(volatile uint32_t* ccr_ptr, uint32_t width_us);
 
 #endif

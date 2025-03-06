@@ -17,12 +17,12 @@ void pwm_device_init(void)
 }
 
 
-void pwm_set_value(uint32_t* ccr_ptr, uint32_t value)
+void pwm_set_value(volatile uint32_t* ccr_ptr, uint32_t value)
 {
     *ccr_ptr = value;
 }
 
-void pwm_set_width(uint32_t* ccr_ptr, uint32_t width_us)
+void pwm_set_width(volatile uint32_t* ccr_ptr, uint32_t width_us)
 {
     pwm_set_value(ccr_ptr, width_us);   // pre-scaled freq = 1MHz
 }
