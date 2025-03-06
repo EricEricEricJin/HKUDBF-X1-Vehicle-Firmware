@@ -7,6 +7,10 @@
 
 #include "plane_task.h"
 #include "communicate_task.h"
+#include "sensor_task.h"
+
+#include "sys.h"
+#include "log.h"
 
 osThreadId_t plane_task_id;
 osThreadAttr_t plane_task_attr = {
@@ -18,6 +22,13 @@ osThreadAttr_t plane_task_attr = {
 osThreadId_t communicate_task_id;
 osThreadAttr_t communicate_task_attr = {
     .name = "COMMUNICATE_TASK",
+    .priority = osPriorityNormal,
+    .stack_size = 512,
+};
+
+osThreadId_t sensor_task_id;
+osThreadAttr_t sensor_task_attr = {
+    .name = "SENSOR_TASK",
     .priority = osPriorityNormal,
     .stack_size = 512,
 };
@@ -37,8 +48,9 @@ void task_init()
     // plane_task_id = osThreadCreate(osThread(PLANE_TASK), NULL);
 
     communicate_task_id = osThreadNew(communicate_task, NULL, &communicate_task_attr);
-
     plane_task_id = osThreadNew(plane_task, NULL, &plane_task_attr);
+    // sensor_task_id = osThreadNew(sensor_task, NULL, &sensor_task_attr);
+    // log_i(sensor_task_id);
 }
 
 void services_task(void const *argument)

@@ -6,13 +6,18 @@
 
 // todo: add BMP280 things
 
+#include "log.h"
+
 __NO_RETURN void sensor_task(void *args)
 {
  
     while (1)
     {
-        osDelay(5);
- 
+        SET_BOARD_LED_ON();
+        log_i("test");
+        osDelay(500);
+        SET_BOARD_LED_OFF();
+        osDelay(500);
     }
 }
 

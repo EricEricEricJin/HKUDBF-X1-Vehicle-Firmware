@@ -1,6 +1,5 @@
 /**
- * Modified by Eric Jin in 2025
- * for DBF X1 Vehicle Firmware
+ * Modified by Eric Jin in 2025 for DBF X1 Vehicle Firmware
  */
 
 /****************************************************************************
@@ -24,6 +23,7 @@
 #include "dma.h"
 #include "drv_uart.h"
 
+// UART1
 extern UART_HandleTypeDef huart1;
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart1_tx;
@@ -32,10 +32,26 @@ static uint8_t usart1_rx_buff[USART1_RX_BUFFER_SIZE];
 static uint8_t usart1_tx_buff[USART1_TX_BUFFER_SIZE];
 static uint8_t usart1_tx_fifo_buff[USART1_TX_FIFO_SIZE];
 
+
+// UART2 
+// todo
+
+// UART3
+extern UART_HandleTypeDef huart3;
+extern DMA_HandleTypeDef hdma_usart3_rx;
+extern DMA_HandleTypeDef hdma_usart3_tx;
+static uint8_t usart3_rx_buff[USART3_RX_BUFFER_SIZE];
+static uint8_t usart3_tx_buff[USART3_TX_BUFFER_SIZE];
+static uint8_t usart3_tx_fifo_buff[USART3_TX_FIFO_SIZE];
+
+
 usart_manage_obj_t usart1_manage_obj = {0};
+usart_manage_obj_t usart3_manage_obj = {0};
 
 static void usart_rec_to_buff(usart_manage_obj_t *m_obj, interrput_type int_type);
 static void usart_transmit_hook(usart_manage_obj_t *m_obj);
+
+
 
 void usart1_manage_init(void)
 {
@@ -51,7 +67,35 @@ void usart1_manage_init(void)
 
     fifo_s_init(&(usart1_manage_obj.tx_fifo), usart1_tx_fifo_buff, USART1_TX_FIFO_SIZE);
 
-    HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
+    // HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
+    // __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);    // even rxbuf not full, will flush into fifo! Nice
+}
+
+// void USART1_IRQHandler(void)
+// {
+//     HAL_UART_IRQHandler(&huart1);
+//       if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE))
+//   {
+// 	  HAL_UART_RxCpltCallback(&huart1);
+//   }
+// }    
+
+void usart3_manage_init(void)
+{
+    usart3_manage_obj.rx_buffer = usart3_rx_buff;
+    usart3_manage_obj.rx_buffer_size = USART3_RX_BUFFER_SIZE;
+    usart3_manage_obj.dma_h = &hdma_usart3_rx;
+    usart3_manage_obj.uart_h = &huart3;
+    usart3_manage_obj.tx_fifo_buffer = usart3_tx_fifo_buff;
+    usart3_manage_obj.tx_fifo_size = USART3_TX_FIFO_SIZE;
+    usart3_manage_obj.tx_buffer_size = USART3_TX_BUFFER_SIZE;
+    usart3_manage_obj.tx_buffer = usart3_tx_buff;
+    usart3_manage_obj.is_sending = 0;
+
+    fifo_s_init(&(usart3_manage_obj.tx_fifo), usart3_tx_fifo_buff, USART3_TX_FIFO_SIZE);
+
+    HAL_UART_Receive_DMA(&huart3, usart3_rx_buff, USART3_RX_BUFFER_SIZE);
     // __HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE);
 }
 
@@ -60,11 +104,25 @@ void usart1_transmit(uint8_t *buff, uint16_t len)
     usart_transmit(&usart1_manage_obj, buff, len);
 }
 
+void usart3_transmit(uint8_t *buff, uint16_t len)
+{
+    usart_transmit(&usart3_manage_obj, buff, len);
+}
+
+
 void usart1_rx_callback_register(usart_call_back_t fun)
 {
     usart_rx_callback_register(&usart1_manage_obj, fun);
     return;
 }
+
+void usart3_rx_callback_register(usart_call_back_t fun)
+{
+    usart_rx_callback_register(&usart3_manage_obj, fun);
+    return;
+}
+
+// callback
 
 /********************** Usual API **********************************************/
 /**
@@ -108,6 +166,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     return;
 }
 
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+    if (huart->Instance == USART1)
+    {
+        usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_UART);
+        // HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
+    }
+    return;
+}
+
+
 /**
  * @brief  tx complete interupt
  * @param
@@ -119,6 +188,11 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
     {
         usart_transmit_hook(&usart1_manage_obj);
     }
+    else if (huart->Instance == USART3)
+    {
+        usart_transmit_hook(&usart3_manage_obj);
+    }
+    
 
     return;
 }

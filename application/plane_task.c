@@ -45,7 +45,7 @@ struct plane_param plane_param = {
 
 void update_stick_val(uint8_t *data, uint16_t len)
 {
-    SET_BOARD_LED_ON();
+    // SET_BOARD_LED_ON();
     memcpy(&stick_val, data, sizeof(stick_val));
     plane_set_stick_val(&plane, stick_val.x / 32768.0f, stick_val.y / 32768.0f);
 }
@@ -62,6 +62,7 @@ __NO_RETURN void plane_task(void *args)
 
     communicate_register_recv_cmd(plane_recv_cmd_table, sizeof(plane_recv_cmd_table) / sizeof(plane_recv_cmd_table));
 
+    // SET_BOARD_LED_ON();
     while (1)
     {
         plane_calculate(&plane);

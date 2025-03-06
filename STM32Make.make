@@ -132,7 +132,8 @@ component/bmp280.c \
 component/gps.c \
 component/servo.c \
 component/transceiver.c \
-support/fifo.c
+support/fifo.c \
+support/log.c
 
 
 CXX_SOURCES = \
