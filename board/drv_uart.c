@@ -136,35 +136,35 @@ void usart_rx_callback_register(usart_manage_obj_t *m_obj, usart_call_back_t fun
     return;
 }
 
-/**
- * @brief  rx dma half complete interupt
- * @param
- * @retval void
- */
-void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
-{
-    if (huart->Instance == USART1)
-    {
-        usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_DMA_HALF);
-        HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
-    }
-    return;
-}
+// /**
+//  * @brief  rx dma half complete interupt
+//  * @param
+//  * @retval void
+//  */
+// void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
+// {
+//     if (huart->Instance == USART1)
+//     {
+//         usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_DMA_HALF);
+//         HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
+//     }
+//     return;
+// }
 
-/**
- * @brief  rx dma complete interupt
- * @param
- * @retval void
- */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-    if (huart->Instance == USART1)
-    {
-        usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_DMA_ALL);
-        HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
-    }
-    return;
-}
+// /**
+//  * @brief  rx dma complete interupt
+//  * @param
+//  * @retval void
+//  */
+// void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+// {
+//     if (huart->Instance == USART1)
+//     {
+//         usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_DMA_ALL);
+//         HAL_UART_Receive_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
+//     }
+//     return;
+// }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
