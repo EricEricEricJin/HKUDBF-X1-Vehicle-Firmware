@@ -16,14 +16,14 @@ osThreadId_t plane_task_id;
 osThreadAttr_t plane_task_attr = {
     .name = "PLANE_TASK",
     .priority = osPriorityNormal,
-    .stack_size = 512,
+    .stack_size = 1024,
 };
 
 osThreadId_t communicate_task_id;
 osThreadAttr_t communicate_task_attr = {
     .name = "COMMUNICATE_TASK",
     .priority = osPriorityNormal,
-    .stack_size = 512,
+    .stack_size = 1024,
 };
 
 osThreadId_t sensor_task_id;

@@ -23,6 +23,9 @@
 #include "dma.h"
 #include "drv_uart.h"
 
+#include "log.h"
+#include "my_math.h"
+
 // UART1
 extern UART_HandleTypeDef huart1;
 extern DMA_HandleTypeDef hdma_usart1_rx;
@@ -32,8 +35,7 @@ static uint8_t usart1_rx_buff[USART1_RX_BUFFER_SIZE];
 static uint8_t usart1_tx_buff[USART1_TX_BUFFER_SIZE];
 static uint8_t usart1_tx_fifo_buff[USART1_TX_FIFO_SIZE];
 
-
-// UART2 
+// UART2
 // todo
 
 // UART3
@@ -44,14 +46,11 @@ static uint8_t usart3_rx_buff[USART3_RX_BUFFER_SIZE];
 static uint8_t usart3_tx_buff[USART3_TX_BUFFER_SIZE];
 static uint8_t usart3_tx_fifo_buff[USART3_TX_FIFO_SIZE];
 
-
 usart_manage_obj_t usart1_manage_obj = {0};
 usart_manage_obj_t usart3_manage_obj = {0};
 
 static void usart_rec_to_buff(usart_manage_obj_t *m_obj, interrput_type int_type);
-static void usart_transmit_hook(usart_manage_obj_t *m_obj);
-
-
+static void usart_transmit_flush_fifo(usart_manage_obj_t *m_obj);
 
 void usart1_manage_init(void)
 {
@@ -74,8 +73,10 @@ void usart3_manage_init(void)
 {
     usart3_manage_obj.rx_buffer = usart3_rx_buff;
     usart3_manage_obj.rx_buffer_size = USART3_RX_BUFFER_SIZE;
+
     usart3_manage_obj.dma_h = &hdma_usart3_rx;
     usart3_manage_obj.uart_h = &huart3;
+
     usart3_manage_obj.tx_fifo_buffer = usart3_tx_fifo_buff;
     usart3_manage_obj.tx_fifo_size = USART3_TX_FIFO_SIZE;
     usart3_manage_obj.tx_buffer_size = USART3_TX_BUFFER_SIZE;
@@ -97,7 +98,6 @@ void usart3_transmit(uint8_t *buff, uint16_t len)
     usart_transmit(&usart3_manage_obj, buff, len);
 }
 
-
 void usart1_rx_callback_register(usart_call_back_t fun)
 {
     usart_rx_callback_register(&usart1_manage_obj, fun);
@@ -113,16 +113,25 @@ void usart_rx_callback_register(usart_manage_obj_t *m_obj, usart_call_back_t fun
     m_obj->call_back_f = fun;
 }
 
-
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
+    usart_manage_obj_t *m_obj;
     if (huart->Instance == USART1)
-    {
-        usart_rec_to_buff(&usart1_manage_obj, INTERRUPT_TYPE_UART);
-        // HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
-    }
-}
+        m_obj = &usart1_manage_obj;
+    else
+        return;
 
+    uint8_t *pdata = m_obj->rx_buffer;
+    uint16_t length = m_obj->rx_buffer_size - (m_obj->dma_h->Instance->CNDTR);
+
+    if (length > m_obj->rx_buffer_size)
+        return;
+
+    if (m_obj->call_back_f != NULL)
+        m_obj->call_back_f(pdata, length);
+
+    HAL_UARTEx_ReceiveToIdle_DMA(huart, m_obj->rx_buffer, m_obj->rx_buffer_size);
+}
 
 /**
  * @brief  tx complete interupt
@@ -131,18 +140,34 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
  */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
+    usart_manage_obj_t* m_obj;
+    if (huart->Instance == USART1)
+        m_obj = &usart1_manage_obj;
+    else if (huart->Instance == USART3)
+        m_obj = &usart3_manage_obj;
+    else
+        return;
+
+    usart_transmit_flush_fifo(m_obj);
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
     if (huart->Instance == USART1)
     {
-        usart_transmit_hook(&usart1_manage_obj);
+        log_i("Error=%d", HAL_UART_GetError(huart));
+        HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
     }
-    else if (huart->Instance == USART3)
-    {
-        usart_transmit_hook(&usart3_manage_obj);
-    }
-    
-
-    return;
 }
+
+/**
+ * How Send works:
+ * if buffer big enough, then copy to buffer and transmit directly 
+ * if buffer not enough, then first transmit BUF_SIZE bytes directly
+ * then copy the rest to fifo
+ * The TxCplt callback will see if fifo has data, if yes then transfer.
+ * ;-)  DJI so gooooood
+ */
 
 /**
  * @brief  uart fifo transmit
@@ -192,6 +217,7 @@ int32_t usart_transmit(usart_manage_obj_t *m_obj, uint8_t *buf, uint16_t len)
         m_obj->is_sending = 1;
         HAL_UART_Transmit_DMA(m_obj->uart_h, m_obj->tx_buffer, to_send_len);
     }
+
     if (to_tx_fifo_len > 0)
     {
         uint8_t len;
@@ -206,24 +232,19 @@ int32_t usart_transmit(usart_manage_obj_t *m_obj, uint8_t *buf, uint16_t len)
     return 0;
 }
 
-static void usart_transmit_hook(usart_manage_obj_t *m_obj)
+/**
+ * @brief  Transmit data remained in TX FIFO 
+ * @param
+ * @retval void
+ */
+static void usart_transmit_flush_fifo(usart_manage_obj_t *m_obj)
 {
-    uint16_t fifo_data_num = 0;
-    uint16_t send_num = 0;
-
-    fifo_data_num = m_obj->tx_fifo.used_num;
-
-    if (fifo_data_num != 0)
+    uint16_t fifo_data_num = m_obj->tx_fifo.used_num;
+    
+    if (fifo_data_num > 0)
     {
-        if (fifo_data_num < m_obj->tx_buffer_size)
-        {
-            send_num = fifo_data_num;
-        }
-        else
-        {
-            send_num = m_obj->tx_buffer_size;
-        }
-        fifo_s_gets(&(m_obj->tx_fifo), (char *)(m_obj->tx_buffer), send_num);
+        uint16_t send_num = VAL_MAX(fifo_data_num, m_obj->tx_buffer_size);
+        fifo_s_gets(&m_obj->tx_fifo, m_obj->tx_buffer, send_num);
         m_obj->is_sending = 1;
         HAL_UART_Transmit_DMA(m_obj->uart_h, m_obj->tx_buffer, send_num);
     }
@@ -231,51 +252,4 @@ static void usart_transmit_hook(usart_manage_obj_t *m_obj)
     {
         m_obj->is_sending = 0;
     }
-    return;
-}
-
-/**
- * @brief  rx to fifo
- * @param
- * @retval void
- */
-static void usart_rec_to_buff(usart_manage_obj_t *m_obj, interrput_type int_type)
-{
-    uint16_t read_end_ptr = 0;
-    uint16_t read_length = 0;
-    uint16_t read_success_length = 0;
-    uint16_t read_start_ptr = m_obj->read_start_index;
-    uint8_t *pdata = m_obj->rx_buffer;
-
-    UNUSED(read_success_length);
-
-    // uint16_t buff_left = m_obj->dma_h->Instance->NDTR;
-    uint16_t buff_left = m_obj->dma_h->Instance->CNDTR;
-
-    if (int_type == INTERRUPT_TYPE_UART)
-    {
-        read_end_ptr = m_obj->rx_buffer_size - buff_left;
-    }
-
-    if (int_type == INTERRUPT_TYPE_DMA_HALF)
-    {
-        read_end_ptr = m_obj->rx_buffer_size / 2;
-    }
-
-    if (int_type == INTERRUPT_TYPE_DMA_ALL)
-    {
-        read_end_ptr = m_obj->rx_buffer_size;
-    }
-
-    read_length = read_end_ptr - m_obj->read_start_index;
-
-    if (m_obj->call_back_f != NULL)
-    {
-        uint8_t *read_ptr = pdata + read_start_ptr;
-        read_success_length = m_obj->call_back_f(read_ptr, read_length);
-    }
-
-    m_obj->read_start_index = (m_obj->read_start_index + read_length) % (m_obj->rx_buffer_size);
-
-    return;
 }
