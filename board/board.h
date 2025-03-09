@@ -3,6 +3,7 @@
 
 #include "drv_io.h"
 #include "drv_uart.h"
+#include "drv_i2c.h"
 
 void board_config();
 

@@ -49,8 +49,9 @@ void task_init()
 
     communicate_task_id = osThreadNew(communicate_task, NULL, &communicate_task_attr);
     plane_task_id = osThreadNew(plane_task, NULL, &plane_task_attr);
+    
     sensor_task_id = osThreadNew(sensor_task, NULL, &sensor_task_attr);
-    // log_i(sensor_task_id);
+    // sensor task incomplete
 }
 
 void services_task(void const *argument)

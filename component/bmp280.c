@@ -5,6 +5,7 @@
 // URL: https://github.com/leon-anavi/rpi-examples/blob/master/BMP280/c/BMP280.c
 
 #include "bmp280.h"
+#include "sys.h"
 
 /* BMP280 default address */
 #define BMP280_I2CADDR 0x76

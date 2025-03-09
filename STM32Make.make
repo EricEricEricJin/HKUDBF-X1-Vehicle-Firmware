@@ -130,6 +130,7 @@ board/drv_io.c \
 board/drv_uart.c \
 component/bmp280.c \
 component/gps.c \
+component/jy901.c \
 component/servo.c \
 component/transceiver.c \
 support/fifo.c \
