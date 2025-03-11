@@ -3,7 +3,7 @@
 
 #include "board.h"
 
-#include "communicate_task.h"
+#include "communicate.h"
 #include "protocol.h"
 
 #include "plane.h"
@@ -16,7 +16,7 @@ struct plane plane;
 struct plane_param plane_param = {
     .servo_params[PLANE_SERVO_AILERON] = {
         .ccr = SERVO_1_CCR, .type = SERVO_180DEG,
-        .zero_deg = 0, .min_deg = -45, .max_deg = 45
+        .zero_deg = -10, .min_deg = -90, .max_deg = 70
     },
     .servo_params[PLANE_SERVO_RUDDER_L] = {
         .ccr = SERVO_2_CCR, .type = SERVO_180DEG,
@@ -31,7 +31,7 @@ struct plane_param plane_param = {
         .zero_deg = 0, .min_deg = -45, .max_deg = 45
     },
 
-    .direct_roll_coeff = 45, .direct_pitch_coeff = 45,
+    .direct_roll_coeff = 90, .direct_pitch_coeff = 90,
 
     .lockatt_roll_coeff = 0, .lockatt_pitch_coeff = 0,  // todo
 

@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 
-float to_float(int x)
+inline float to_float(int x)
 {
     float ret = x / 32768.0f;
     return ret >= 1 ? ret - 2 : ret;

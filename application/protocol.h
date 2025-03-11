@@ -24,4 +24,23 @@ struct __attribute__((__packed__)) cmd_stick_val
     int16_t y;
 };
 
+#define DATA_ID_SENSOR_EXPORT (0x03)
+typedef struct sensor_data_export* sensor_data_export_t;
+struct __attribute__((__packed__)) sensor_data_export
+{
+    int16_t a_x, a_y, a_z;
+    int16_t w_x, w_y, w_z;
+    int16_t b_x, b_y, b_z;
+    int16_t roll, pitch, yaw;
+
+    uint8_t volt_bat;
+
+    int16_t pressure;
+    int16_t temperature;
+
+    int8_t elevator, aileron, rudder_l, rudder_r;
+
+};
+
+
 #endif

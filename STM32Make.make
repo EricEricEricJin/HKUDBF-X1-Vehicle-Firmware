@@ -120,7 +120,7 @@ Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 algorithm/crc16.c \
 algorithm/crc8.c \
 algorithm/pid.c \
-application/communicate_task.c \
+application/communicate.c \
 application/init.c \
 application/plane.c \
 application/plane_task.c \
@@ -133,8 +133,10 @@ component/gps.c \
 component/jy901.c \
 component/servo.c \
 component/transceiver.c \
+support/event_mgr.c \
 support/fifo.c \
-support/log.c
+support/log.c \
+support/memory_mgr.c
 
 
 CXX_SOURCES = \

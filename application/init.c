@@ -6,7 +6,7 @@
 #include "board.h"
 
 #include "plane_task.h"
-#include "communicate_task.h"
+#include "communicate.h"
 #include "sensor_task.h"
 
 #include "sys.h"
@@ -19,18 +19,11 @@ osThreadAttr_t plane_task_attr = {
     .stack_size = 1024,
 };
 
-osThreadId_t communicate_task_id;
-osThreadAttr_t communicate_task_attr = {
-    .name = "COMMUNICATE_TASK",
-    .priority = osPriorityNormal,
-    .stack_size = 1024,
-};
-
 osThreadId_t sensor_task_id;
 osThreadAttr_t sensor_task_attr = {
     .name = "SENSOR_TASK",
     .priority = osPriorityNormal,
-    .stack_size = 1024,
+    .stack_size = 2048,
 };
 
 void hw_init()
@@ -45,12 +38,13 @@ void sys_init()
 void task_init()
 {
     // osThreadDef(PLANE_TASK, plane_task, osPriorityNormal, 0, 512);
-    // plane_task_id = osThreadCreate(osThread(PLANE_TASK), NULL);
-
-    communicate_task_id = osThreadNew(communicate_task, NULL, &communicate_task_attr);
-    plane_task_id = osThreadNew(plane_task, NULL, &plane_task_attr);
+    // plane_task_id = osThreadCreate(osThread(PLANE_TASK), NULL);    
+    communicate_task_init();
     
+    plane_task_id = osThreadNew(plane_task, NULL, &plane_task_attr);
     sensor_task_id = osThreadNew(sensor_task, NULL, &sensor_task_attr);
+
+
     // sensor task incomplete
 }
 

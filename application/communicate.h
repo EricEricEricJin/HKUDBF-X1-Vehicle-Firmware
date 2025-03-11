@@ -16,10 +16,12 @@ struct communicate_recv_cmd
 
 
 
-void communicate_task(void *argument);
+// void communicate_rx_task(void *argument);
+// void communicate_tx_task(void *argument);
+void communicate_task_init();
 
 void communicate_register_recv_cmd(communicate_recv_cmd_t table, int n);
 
-void communicate_transmit(uint8_t *data, uint8_t cmd_id, uint16_t len);
+// void communicate_transmit(uint8_t *data, uint8_t cmd_id, uint16_t len);
 
 #endif 

@@ -122,11 +122,12 @@ void transceiver_rx_data_handle(transceiver_t trans, uint8_t *data, uint16_t len
 void transceiver_tx_transmit(transceiver_t trans, const uint8_t *data, uint8_t cmd_id, uint16_t len)
 {
     // write header
+    trans->tx_index = 0;
     frame_header_t header = (frame_header_t)trans->tx_buffer;
     header->sof = TRANS_TX_SOF;
     header->cmd_id = cmd_id;
     header->payload_len = len;
-    header->crc8 = crc8((uint8_t*)header, TRANS_TX_HEADER_SIZE);
+    header->crc8 = crc8((uint8_t*)header, TRANS_TX_HEADER_SIZE - 1);
     trans->tx_index += TRANS_TX_HEADER_SIZE;
 
     // copy data
