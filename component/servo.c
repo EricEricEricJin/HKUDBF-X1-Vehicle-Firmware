@@ -64,3 +64,13 @@ void servo_set_deg_trimmed(servo_t servo, float deg)
     pwm_set_width(servo->param.ccr, servo_deg_to_pw(servo->param.type, deg_abs));
     servo->degree = deg_abs;
 }
+
+float servo_get_deg_abs(servo_t servo)
+{
+    return servo->degree;
+}
+
+float servo_get_deg_trimmed(servo_t servo)
+{
+    return servo->degree - servo->param.zero_deg;
+}

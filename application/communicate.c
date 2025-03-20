@@ -11,6 +11,8 @@
 
 #include "log.h"
 
+#include "plane_task.h"
+
 #define TX_PERIOD 200
 
 struct transceiver transceiver;
@@ -76,10 +78,18 @@ __NO_RETURN void communicate_rx_task(void *argument)
 __NO_RETURN void communicate_tx_task(void *argument)
 {
     struct sensor_data_export tx_sensor_data;
+    struct servo_fdbk servo_fdbk;
     while (1)
     {
         get_export_sensor_data(&tx_sensor_data, osWaitForever);
-        // // log_i("temp = %d", tx_sensor_data.temperature);
+        get_export_servo_fdbk(&servo_fdbk);
+
+        tx_sensor_data.aileron = servo_fdbk.aileron;
+        tx_sensor_data.rudder_l = servo_fdbk.rudder_l;
+        tx_sensor_data.rudder_r = servo_fdbk.rudder_r;
+        tx_sensor_data.elevator = servo_fdbk.elevator;
+        // todo: seperate sensor_data and servo_fdbk for clearity
+
         transceiver_tx_transmit(&transceiver, (uint8_t*)&tx_sensor_data, DATA_ID_SENSOR_EXPORT, sizeof(struct sensor_data_export));
         osDelay(TX_PERIOD);
     }

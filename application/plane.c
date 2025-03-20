@@ -151,3 +151,12 @@ void plane_calculate(plane_t plane)
 
     }    
 }
+
+
+void plane_get_info(plane_t plane, plane_info_t info)
+{
+    info->deg_aileron = servo_get_deg_trimmed(&plane->servos[PLANE_SERVO_AILERON]);
+    info->deg_elevator = servo_get_deg_trimmed(&plane->servos[PLANE_SERVO_ELEVATOR]);
+    info->deg_rudder = servo_get_deg_trimmed(&plane->servos[PLANE_SERVO_RUDDER_L]);
+    info->opmode = plane->opmode;
+}

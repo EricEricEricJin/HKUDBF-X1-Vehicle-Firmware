@@ -18,6 +18,8 @@ struct sensor_data_decoded plane_sensor_data_decoded;
 // initialize plane obj
 struct plane plane;
 
+struct plane_info plane_info;
+
 struct plane_param plane_param = {
     .servo_params[PLANE_SERVO_AILERON] = {
         .ccr = SERVO_1_CCR, .type = SERVO_180DEG,
@@ -102,4 +104,14 @@ __NO_RETURN void plane_task(void *args)
         // SET_BOARD_LED_OFF();
         // osDelay(500);
     }
+}
+
+void get_export_servo_fdbk(servo_fdbk_t data)
+{
+    plane_get_info(&plane, &plane_info);
+    data->elevator = (int8_t)plane_info.deg_elevator;
+    data->aileron = (int8_t)plane_info.deg_aileron;
+    data->rudder_l = (int8_t)plane_info.deg_rudder;
+    data->rudder_r = (int8_t)plane_info.deg_rudder;
+    data->mode = plane_info.opmode;
 }

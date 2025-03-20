@@ -43,6 +43,13 @@ struct __attribute__((__packed__)) sensor_data_export
 
 };
 
+#define DATA_ID_SERVO_FDBK (0x04)
+typedef struct servo_fdbk* servo_fdbk_t;
+struct __attribute__((__packed__)) servo_fdbk
+{
+    int8_t elevator, aileron, rudder_l, rudder_r;
+    uint8_t mode;
+};
 
 
 #endif

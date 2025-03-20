@@ -48,9 +48,11 @@ struct plane_param {
     struct pid_param pid_param_pitch, pid_param_roll;
 };
 
-// struct plane_info {
-//     uint8_t degree;
-// };
+typedef struct plane_info* plane_info_t;
+struct plane_info {
+    float deg_aileron, deg_elevator, deg_rudder;
+    uint8_t opmode;
+};
 
 
 void plane_init(plane_t plane, plane_param_t param);
@@ -60,8 +62,9 @@ void plane_set_opmode(plane_t plane, plane_opmode_t mode);
 void plane_set_stick_val(plane_t plane, float x, float y, float z);
 
 void plane_set_sensor_data(plane_t plane, float roll, float pitch, float yaw);
-// void plane_get_info(plane_t plane);
 
 void plane_calculate(plane_t plane);
+
+void plane_get_info(plane_t plane, plane_info_t info);
 
 #endif 

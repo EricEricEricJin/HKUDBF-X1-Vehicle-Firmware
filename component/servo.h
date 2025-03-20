@@ -44,4 +44,7 @@ void servo_turn_off(servo_t servo);
 void servo_set_deg_abs(servo_t servo, float deg);
 void servo_set_deg_trimmed(servo_t servo, float deg);
 
+float servo_get_deg_abs(servo_t servo);
+float servo_get_deg_trimmed(servo_t servo);
+
 #endif 
