@@ -20,7 +20,18 @@ int jy901_init(jy901_t dev, uint16_t orient, uint16_t axis6)
     if (i2c_check(&dev->i2c_dev) != HAL_OK)
         return -1;
 
-    return jy901_restart(dev);
+
+    // set orient
+    uint16_t value = 0x00;
+    i2c_write_mem_16(&dev->i2c_dev, 0x23, value);
+
+    // set axis9
+    value = 0x00;
+    i2c_write_mem_16(&dev->i2c_dev, 0x24, value);
+
+    // todo: play with more settings
+
+    jy901_restart(dev);
 }
 
 int jy901_restart(jy901_t dev) { 
@@ -61,9 +72,9 @@ int jy901_decode(jy901_data_raw_t raw, jy901_data_decoded_t decoded)
     decoded->b_y = to_float(raw->b_y);
     decoded->b_z = to_float(raw->b_z);
 
-    decoded->roll = to_float(raw->roll);
-    decoded->pitch = to_float(raw->pitch);
-    decoded->yaw = to_float(raw->yaw);
+    decoded->roll = 180.0f * to_float(raw->roll);
+    decoded->pitch = -180.0f * to_float(raw->pitch);
+    decoded->yaw = -180.0f * to_float(raw->yaw);
 
     return 0;
 }

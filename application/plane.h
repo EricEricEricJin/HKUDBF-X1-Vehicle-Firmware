@@ -27,21 +27,23 @@ typedef struct plane_param* plane_param_t;
 
 struct plane {
 
-    float direct_roll_coeff, direct_pitch_coeff;
+    float direct_roll_coeff, direct_pitch_coeff, direct_yaw_coeff;
     float lockatt_roll_coeff, lockatt_pitch_coeff;
     
     struct servo servos[PLANE_SERVO_MAX_NUM];
     struct pid  pid_pitch, pid_roll;
 
     plane_opmode_t opmode;
-    float stick_x, stick_y;
+    float stick_x, stick_y, stick_z;
 
-    osMutexId_t stick_val_mutex_id;
+    float roll, pitch, yaw;
+
+    osMutexId_t stick_val_mutex_id, sensor_data_mutex_id;
 };
 
 struct plane_param {
     struct servo_param servo_params[PLANE_SERVO_MAX_NUM]; 
-    float direct_roll_coeff, direct_pitch_coeff;
+    float direct_roll_coeff, direct_pitch_coeff, direct_yaw_coeff;
     float lockatt_roll_coeff, lockatt_pitch_coeff;
     struct pid_param pid_param_pitch, pid_param_roll;
 };
@@ -55,8 +57,9 @@ void plane_init(plane_t plane, plane_param_t param);
 
 void plane_set_opmode(plane_t plane, plane_opmode_t mode);
 
-void plane_set_stick_val(plane_t plane, float x, float y);
+void plane_set_stick_val(plane_t plane, float x, float y, float z);
 
+void plane_set_sensor_data(plane_t plane, float roll, float pitch, float yaw);
 // void plane_get_info(plane_t plane);
 
 void plane_calculate(plane_t plane);
