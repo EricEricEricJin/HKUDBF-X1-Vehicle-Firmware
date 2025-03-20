@@ -1,6 +1,6 @@
 #include "drv_io.h"
 #include "tim.h"
-
+#include "adc.h"
 void pwm_device_init(void)
 {
     // TIM2 for servos
@@ -27,3 +27,13 @@ void pwm_set_width(volatile uint32_t* ccr_ptr, uint32_t width_us)
     pwm_set_value(ccr_ptr, width_us);   // pre-scaled freq = 1MHz
 }
 
+static uint32_t adc_buf;
+
+void adc_init(void) { HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED); }
+
+void adc_convert(void) { HAL_ADC_Start_DMA(&hadc1, &adc_buf, 1); }
+
+uint16_t adc_get_mv(void)
+{
+    return adc_buf * 3300 / 4096;
+}

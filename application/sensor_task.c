@@ -59,6 +59,8 @@ __NO_RETURN void sensor_task(void *args)
         memcpy(&jy901_data_raw, &jy901.raw_data, sizeof(struct jy901_data_raw));
         memcpy(&bmp280_data, &bmp280.data, sizeof(struct bmp280_data));
         osMutexRelease(sensor_mux_id);
+        
+        adc_convert();
         // log_i("Lock Done!");
         
         // waketime += 20;
@@ -75,6 +77,10 @@ void get_decoded_sensor_data(sensor_data_decoded_t data, uint32_t timeout)
     memcpy(&data->bmp280_data, &bmp280.data, sizeof(struct bmp280_data));
     osMutexRelease(sensor_mux_id);
 }
+
+#define BAT_CELL_NUM (2)
+#define CELL_VOLT_MIN (3000)
+#define CELL_VOLT_MAX (4200)
 
 void get_export_sensor_data(sensor_data_export_t data, uint32_t timeout)
 {
@@ -95,4 +101,6 @@ void get_export_sensor_data(sensor_data_export_t data, uint32_t timeout)
     data->temperature = export_temperature(bmp280_data.temperature);
     // log_i("temp = %f", bmp280_data.temperature);
     osMutexRelease(sensor_mux_id);
+    data->volt_bat = adc_get_mv();
+    log_i("v=%d", data->volt_bat);
 }

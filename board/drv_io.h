@@ -22,4 +22,8 @@ void pwm_device_init();
 void pwm_set_value(volatile uint32_t* ccr_ptr, uint32_t value);
 void pwm_set_width(volatile uint32_t* ccr_ptr, uint32_t width_us);
 
+void adc_init();
+void adc_convert();
+uint16_t adc_get_mv();
+
 #endif

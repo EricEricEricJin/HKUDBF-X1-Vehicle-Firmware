@@ -34,7 +34,8 @@ struct __attribute__((__packed__)) sensor_data_export
     int16_t b_x, b_y, b_z;
     int16_t roll, pitch, yaw;
 
-    uint8_t volt_bat;
+    // uint8_t volt_bat;
+    uint16_t volt_bat;
 
     int16_t pressure;
     int16_t temperature;
