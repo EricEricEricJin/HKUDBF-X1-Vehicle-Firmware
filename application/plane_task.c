@@ -72,9 +72,37 @@ void update_opmode(uint8_t *data, uint16_t len)
     plane_set_opmode(&plane, opmode);
 }
 
+void update_pid_param(uint8_t *data, uint16_t len)
+{
+    if (len != sizeof(float) * 4)
+        return;
+
+    float* pparr = (float*)data;
+    struct pid_param pp_pitch = {
+        .p = pparr[0],
+        .i = pparr[1],
+        .d = 0.0f,
+        .input_max_err = 0.0f,
+        .integral_limit = 0.0f,
+        .max_out = 45.0f
+    };
+    struct pid_param pp_roll = {
+        .p = pparr[2],
+        .i = pparr[3],
+        .d = 0.0f,
+        .input_max_err = 0.0f,
+        .integral_limit = 0.0f,
+        .max_out = 45.0f
+    };
+    
+    plane_update_pid_param(&plane, pp_pitch, pp_roll);
+    log_i("pitch: p = %f, i = %f, roll: p = %f, i = %f", pp_pitch.p, pp_pitch.i, pp_roll.p, pp_roll.i); 
+}
+
 struct communicate_recv_cmd plane_recv_cmd_table[] = {
     {CMD_ID_STICK_VAL, update_stick_val},
-    {CMD_ID_SET_MODE, update_opmode}
+    {CMD_ID_SET_MODE, update_opmode},
+    {CMD_ID_PID_PARAM, update_pid_param},
 };
 
 __NO_RETURN void plane_task(void *args)

@@ -38,7 +38,7 @@ struct plane {
 
     float roll, pitch, yaw;
 
-    osMutexId_t stick_val_mutex_id, sensor_data_mutex_id;
+    osMutexId_t stick_val_mutex_id, sensor_data_mutex_id, pid_param_mutex_id;
 };
 
 struct plane_param {
@@ -66,5 +66,7 @@ void plane_set_sensor_data(plane_t plane, float roll, float pitch, float yaw);
 void plane_calculate(plane_t plane);
 
 void plane_get_info(plane_t plane, plane_info_t info);
+
+void plane_update_pid_param(plane_t plane, struct pid_param pitch_param, struct pid_param roll_param);
 
 #endif 

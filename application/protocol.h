@@ -25,6 +25,8 @@ struct __attribute__((__packed__)) cmd_stick_val
     int16_t z;
 };
 
+#define CMD_ID_PID_PARAM (0xEE)
+
 #define DATA_ID_SENSOR_EXPORT (0x03)
 typedef struct sensor_data_export* sensor_data_export_t;
 struct __attribute__((__packed__)) sensor_data_export
@@ -51,6 +53,7 @@ struct __attribute__((__packed__)) servo_fdbk
     int8_t elevator, aileron, rudder_l, rudder_r;
     uint8_t mode;
 };
+
 
 
 #endif

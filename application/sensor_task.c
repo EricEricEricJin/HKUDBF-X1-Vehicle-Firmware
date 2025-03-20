@@ -102,5 +102,5 @@ void get_export_sensor_data(sensor_data_export_t data, uint32_t timeout)
     // log_i("temp = %f", bmp280_data.temperature);
     osMutexRelease(sensor_mux_id);
     data->volt_bat = adc_get_mv();
-    log_i("v=%d", data->volt_bat);
+    // log_i("v=%d", data->volt_bat);
 }
