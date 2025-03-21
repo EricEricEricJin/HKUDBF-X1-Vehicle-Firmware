@@ -166,9 +166,9 @@ void plane_get_info(plane_t plane, plane_info_t info)
 void plane_update_pid_param(plane_t plane, struct pid_param pitch_param, struct pid_param roll_param)
 {
     osMutexAcquire(plane->pid_param_mutex_id, osWaitForever);
-    // pid_struct_init(&plane->pid_pitch, pitch_param.max_out, pitch_param.integral_limit, pitch_param.p, pitch_param.i, pitch_param.d);
-    // pid_struct_init(&plane->pid_roll, roll_param.max_out, roll_param.integral_limit, roll_param.p, roll_param.i, roll_param.d);
-    memcpy(&plane->pid_pitch.param, &pitch_param, sizeof(struct pid_param));
-    memcpy(&plane->pid_roll.param, &roll_param, sizeof(struct pid_param));
+    pid_struct_init(&plane->pid_pitch, pitch_param.max_out, pitch_param.integral_limit, pitch_param.p, pitch_param.i, pitch_param.d);
+    pid_struct_init(&plane->pid_roll, roll_param.max_out, roll_param.integral_limit, roll_param.p, roll_param.i, roll_param.d);
+    // memcpy(&plane->pid_pitch.param, &pitch_param, sizeof(struct pid_param));
+    // memcpy(&plane->pid_roll.param, &roll_param, sizeof(struct pid_param));
     osMutexRelease(plane->pid_param_mutex_id);
 }

@@ -16,7 +16,7 @@ osThreadId_t plane_task_id;
 osThreadAttr_t plane_task_attr = {
     .name = "PLANE_TASK",
     .priority = osPriorityNormal,
-    .stack_size = 1024,
+    .stack_size = 2048,
 };
 
 osThreadId_t sensor_task_id;

@@ -74,7 +74,7 @@ int jy901_decode(jy901_data_raw_t raw, jy901_data_decoded_t decoded)
 
     decoded->roll = 180.0f * to_float(raw->roll);
     decoded->pitch = -180.0f * to_float(raw->pitch);
-    decoded->yaw = -180.0f * to_float(raw->yaw);
+    decoded->yaw = 180.0f * to_float(raw->yaw);
 
     return 0;
 }

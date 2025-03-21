@@ -31,11 +31,11 @@ struct plane_param plane_param = {
     },
     .servo_params[PLANE_SERVO_RUDDER_R] = {
         .ccr = SERVO_3_CCR, .type = SERVO_180DEG,
-        .zero_deg = 0, .min_deg = -45, .max_deg = 45
+        .zero_deg = 8, .min_deg = -45+8, .max_deg = 45+8
     },
     .servo_params[PLANE_SERVO_ELEVATOR] = {
         .ccr = SERVO_4_CCR, .type = SERVO_180DEG,
-        .zero_deg = 0, .min_deg = -45, .max_deg = 45
+        .zero_deg = 0, .min_deg = 45, .max_deg = -45
     },
 
     .direct_roll_coeff = 45, .direct_pitch_coeff = 45, .direct_yaw_coeff = 45,
@@ -72,31 +72,42 @@ void update_opmode(uint8_t *data, uint16_t len)
     plane_set_opmode(&plane, opmode);
 }
 
+static struct pid_param pp_pitch;
+static struct pid_param pp_roll; 
+
 void update_pid_param(uint8_t *data, uint16_t len)
 {
-    if (len != sizeof(float) * 4)
+    if (len != sizeof(float) * 12)
+    {
+        log_e("pid param len %d", len);
         return;
+    }
+    log_i("update pid param");
 
     float* pparr = (float*)data;
-    struct pid_param pp_pitch = {
-        .p = pparr[0],
-        .i = pparr[1],
-        .d = 0.0f,
-        .input_max_err = 0.0f,
-        .integral_limit = 0.0f,
-        .max_out = 45.0f
-    };
-    struct pid_param pp_roll = {
-        .p = pparr[2],
-        .i = pparr[3],
-        .d = 0.0f,
-        .input_max_err = 0.0f,
-        .integral_limit = 0.0f,
-        .max_out = 45.0f
-    };
     
+    pp_pitch.p = pparr[0];
+    pp_pitch.i = pparr[1];
+    pp_pitch.d = pparr[2];
+    pp_pitch.input_max_err = pparr[3];
+    pp_pitch.max_out = pparr[4];
+    pp_pitch.integral_limit = pparr[5];
+
+    log_i("1 assigned");
+
+    pp_roll.p = pparr[6];
+    pp_roll.i = pparr[7];
+    pp_roll.d = pparr[8];
+    pp_roll.input_max_err = pparr[9];
+    pp_roll.max_out = pparr[10];
+    pp_roll.integral_limit = pparr[11];
+    
+    log_i("2 assigned");
+
     plane_update_pid_param(&plane, pp_pitch, pp_roll);
-    log_i("pitch: p = %f, i = %f, roll: p = %f, i = %f", pp_pitch.p, pp_pitch.i, pp_roll.p, pp_roll.i); 
+    // log_i("pitch: p = %f, i = %f, roll: p = %f, i = %f", pp_pitch.p, pp_pitch.i, pp_roll.p, pp_roll.i); 
+    log_i("p=%f, i=%f, d=%f, max_out=%f, integral_limit=%f, max_err=%f", pp_pitch.p, pp_pitch.i, pp_pitch.d, pp_pitch.max_out, pp_pitch.integral_limit, pp_pitch.input_max_err);
+    // log_i("p=%f, i=%f, d=%f, max_out=%f, integral_limit=%f, max_err=%f", pp_roll.p, pp_roll.i, pp_roll.d, pp_roll.max_out, pp_roll.integral_limit, pp_roll.input_max_err);
 }
 
 struct communicate_recv_cmd plane_recv_cmd_table[] = {
