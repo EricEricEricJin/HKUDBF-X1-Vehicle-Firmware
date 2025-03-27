@@ -120,6 +120,12 @@ void get_export_sensor_data(sensor_data_export_t data, uint32_t timeout)
     data->pressure = export_pressure(bmp280_data.pressure);
     data->temperature = export_temperature(bmp280_data.temperature);
     // log_i("temp = %f", bmp280_data.temperature);
+    
+    if (GET_DET_SW1() == DET_SW_DETACHED)
+        SET_BOARD_LED_ON();
+    else
+        SET_BOARD_LED_OFF();   
+    
     osMutexRelease(sensor_mux_id);
     data->volt_bat = adc_get_mv();
     // gps_get_pvt_data(&gps, &gps_pvt_data);
