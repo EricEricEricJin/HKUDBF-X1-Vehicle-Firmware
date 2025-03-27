@@ -43,7 +43,7 @@ struct __attribute__((__packed__)) sensor_data_export
     int16_t temperature;
 
     int8_t elevator, aileron, rudder_l, rudder_r;
-
+    uint8_t state;
 };
 
 #define DATA_ID_SERVO_FDBK (0x04)

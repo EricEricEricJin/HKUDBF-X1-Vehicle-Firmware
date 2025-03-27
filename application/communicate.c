@@ -50,6 +50,8 @@ void communicate_register_recv_cmd(communicate_recv_cmd_t table, int n)
 //     transceiver_tx_transmit(&transceiver, data, cmd_id, len);
 // }
 
+static uint8_t det_cnt;     // detach counter
+
 osThreadId_t rx_task_id;
 osThreadAttr_t rx_task_attr = {
     .name = "COMM_RX_TASK",
@@ -77,6 +79,10 @@ __NO_RETURN void communicate_rx_task(void *argument)
 }
 __NO_RETURN void communicate_tx_task(void *argument)
 {
+    det_cnt = 0;
+
+    uint8_t det_sw1_ff = GET_DET_SW1();
+
     struct sensor_data_export tx_sensor_data;
     struct servo_fdbk servo_fdbk;
     while (1)
@@ -88,6 +94,12 @@ __NO_RETURN void communicate_tx_task(void *argument)
         tx_sensor_data.rudder_l = servo_fdbk.rudder_l;
         tx_sensor_data.rudder_r = servo_fdbk.rudder_r;
         tx_sensor_data.elevator = servo_fdbk.elevator;
+        
+        if (GET_DET_SW1() == DET_SW_DETACHED && det_sw1_ff == DET_SW_ATTACHED)
+            det_cnt++;
+        det_sw1_ff = GET_DET_SW1();
+        tx_sensor_data.state = det_cnt;
+
         // todo: seperate sensor_data and servo_fdbk for clearity
 
         transceiver_tx_transmit(&transceiver, (uint8_t*)&tx_sensor_data, DATA_ID_SENSOR_EXPORT, sizeof(struct sensor_data_export));
