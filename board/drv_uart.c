@@ -36,7 +36,9 @@ static uint8_t usart1_tx_buff[USART1_TX_BUFFER_SIZE];
 static uint8_t usart1_tx_fifo_buff[USART1_TX_FIFO_SIZE];
 
 // UART2
-// todo
+extern UART_HandleTypeDef huart2;
+extern DMA_HandleTypeDef hdma_usart2_rx;
+static uint8_t usart2_rx_buff[USART2_RX_BUFFER_SIZE];
 
 // UART3
 extern UART_HandleTypeDef huart3;
@@ -47,6 +49,7 @@ static uint8_t usart3_tx_buff[USART3_TX_BUFFER_SIZE];
 static uint8_t usart3_tx_fifo_buff[USART3_TX_FIFO_SIZE];
 
 usart_manage_obj_t usart1_manage_obj = {0};
+usart_manage_obj_t usart2_manage_obj = {0};
 usart_manage_obj_t usart3_manage_obj = {0};
 
 static void usart_rec_to_buff(usart_manage_obj_t *m_obj, interrput_type int_type);
@@ -67,6 +70,16 @@ void usart1_manage_init(void)
     fifo_s_init(&(usart1_manage_obj.tx_fifo), usart1_tx_fifo_buff, USART1_TX_FIFO_SIZE);
 
     HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
+}
+
+void usart2_manage_init(void)
+{
+    usart2_manage_obj.rx_buffer = usart2_rx_buff;
+    usart2_manage_obj.rx_buffer_size = USART2_RX_BUFFER_SIZE;
+    usart2_manage_obj.dma_h = &hdma_usart2_rx;
+    usart2_manage_obj.uart_h = &huart2;
+
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart2, usart2_rx_buff, USART2_RX_BUFFER_SIZE);
 }
 
 void usart3_manage_init(void)
@@ -103,6 +116,11 @@ void usart1_rx_callback_register(usart_call_back_t fun)
     usart_rx_callback_register(&usart1_manage_obj, fun);
 }
 
+void usart2_rx_callback_register(usart_call_back_t fun)
+{
+    usart_rx_callback_register(&usart2_manage_obj, fun);
+}
+
 void usart3_rx_callback_register(usart_call_back_t fun)
 {
     usart_rx_callback_register(&usart3_manage_obj, fun);
@@ -118,6 +136,10 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     usart_manage_obj_t *m_obj;
     if (huart->Instance == USART1)
         m_obj = &usart1_manage_obj;
+    else if (huart->Instance == USART2)
+        m_obj = &usart2_manage_obj;
+    else if (huart->Instance == USART3)
+        m_obj = &usart3_manage_obj;
     else
         return;
 
@@ -155,8 +177,18 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART1)
     {
-        log_i("Error=%d", HAL_UART_GetError(huart));
+        log_i("UART1 Error=%d", HAL_UART_GetError(huart));
         HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart1_rx_buff, USART1_RX_BUFFER_SIZE);
+    }
+    else if (huart->Instance == USART2)
+    {
+        log_i("UART2 Error=%d", HAL_UART_GetError(huart));
+        HAL_UARTEx_ReceiveToIdle_DMA(&huart2, usart2_rx_buff, USART2_RX_BUFFER_SIZE);
+    }
+    else if (huart->Instance == USART3)
+    {
+        log_i("UART3 Error=%d", HAL_UART_GetError(huart));
+        HAL_UARTEx_ReceiveToIdle_DMA(&huart3, usart3_rx_buff, USART3_RX_BUFFER_SIZE);
     }
 }
 

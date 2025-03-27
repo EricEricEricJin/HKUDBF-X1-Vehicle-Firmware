@@ -14,15 +14,15 @@ typedef struct transceiver *transceiver_t;
 
 #define TRANS_RX_BUF_SIZE 512
 #define TRANS_RX_SOF 0xA5
-#define TRANS_RX_HEADER_SIZE sizeof(struct frame_header)
+#define TRANS_RX_HEADER_SIZE sizeof(struct trans_frame_header)
 
 #define TRANS_TX_BUF_SIZE 512
 #define TRANS_TX_SOF 0xA5
-#define TRANS_TX_HEADER_SIZE sizeof(struct frame_header)
+#define TRANS_TX_HEADER_SIZE sizeof(struct trans_frame_header)
 
-typedef struct frame_header *frame_header_t;
+typedef struct trans_frame_header *trans_frame_header_t;
 
-struct __attribute__((__packed__)) frame_header
+struct __attribute__((__packed__)) trans_frame_header
 {
     uint8_t sof;
     uint8_t cmd_id;

@@ -8,6 +8,9 @@
 
 #include "log.h"
 
+#include "gps.h"
+#include "board.h"
+
 struct bmp280 bmp280 = {
     .i2c_dev = {
         .i2c = &hi2c2,
@@ -33,6 +36,15 @@ const osMutexAttr_t sensor_mutex_attr = {
     .name = "SENSOR_MUTEX",
 };
 
+struct gps gps;
+struct gps_pvt_data gps_pvt_data;
+
+
+uint32_t usart2_callback(uint8_t *buf, uint16_t len)
+{
+    gps_rx_data_handle(&gps, buf, len);
+    return 0;
+}
 
 __NO_RETURN void sensor_task(void *args)
 {
@@ -48,11 +60,19 @@ __NO_RETURN void sensor_task(void *args)
     log_i("jy901 init = %d", ret);
     osDelay(100);
 
+    // Initialize GPS
+    // gps_init(&gps);
+    // usart2_rx_callback_register(usart2_callback);
+    // osDelay(100);
+
     TickType_t waketime = osKernelSysTick();
     while (1)
     {
         jy901_update(&jy901);
         bmp280_update(&bmp280);
+
+        // gps_unpack_fifo_data(&gps);
+
 
         osMutexAcquire(sensor_mux_id, osWaitForever);
         jy901_decode(&jy901.raw_data, &jy901_data_decoded);
@@ -65,7 +85,7 @@ __NO_RETURN void sensor_task(void *args)
         
         // waketime += 20;
         // osDelayUntil(waketime);
-        osDelay(50);
+        osDelay(20);
         // log_i("Wait Done!");
     }
 }
@@ -102,5 +122,7 @@ void get_export_sensor_data(sensor_data_export_t data, uint32_t timeout)
     // log_i("temp = %f", bmp280_data.temperature);
     osMutexRelease(sensor_mux_id);
     data->volt_bat = adc_get_mv();
+    // gps_get_pvt_data(&gps, &gps_pvt_data);
+    // log_i("lat=%d, lon=%d, alt=%d", gps_pvt_data.lat, gps_pvt_data.lon, gps_pvt_data.height);
     // log_i("v=%d", data->volt_bat);
 }

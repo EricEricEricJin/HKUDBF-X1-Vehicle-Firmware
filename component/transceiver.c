@@ -29,7 +29,7 @@ void transceiver_init(transceiver_t trans,
     // SET_BOARD_LED_OFF();
 }
 
-void data_unpack(transceiver_t trans, frame_header_t header_ptr, uint8_t* payload_ptr)
+void data_unpack(transceiver_t trans, trans_frame_header_t header_ptr, uint8_t* payload_ptr)
 {
     trans->cmd_callback(header_ptr->cmd_id, payload_ptr, header_ptr->payload_len);
 }
@@ -67,7 +67,7 @@ void transceiver_unpack_fifo_data(transceiver_t trans)
             {
                 if (crc8(trans->rx_buffer, TRANS_RX_HEADER_SIZE - 1) == byte)
                 {
-                    trans->payload_len = ((frame_header_t)trans->rx_buffer)->payload_len;
+                    trans->payload_len = ((trans_frame_header_t)trans->rx_buffer)->payload_len;
                     trans->unpack_state = STATE_PAYLOAD;
                 }
                 else
@@ -90,7 +90,7 @@ void transceiver_unpack_fifo_data(transceiver_t trans)
                 
                 if (crc16(&trans->rx_buffer[TRANS_RX_HEADER_SIZE], trans->rx_index - 2 - TRANS_RX_HEADER_SIZE) == crc16_recv)
                 {
-                    data_unpack(trans, (frame_header_t)trans->rx_buffer, &trans->rx_buffer[TRANS_RX_HEADER_SIZE]);
+                    data_unpack(trans, (trans_frame_header_t)trans->rx_buffer, &trans->rx_buffer[TRANS_RX_HEADER_SIZE]);
                 }
 
                 trans->unpack_state = STATE_SOF;
@@ -123,7 +123,7 @@ void transceiver_tx_transmit(transceiver_t trans, const uint8_t *data, uint8_t c
 {
     // write header
     trans->tx_index = 0;
-    frame_header_t header = (frame_header_t)trans->tx_buffer;
+    trans_frame_header_t header = (trans_frame_header_t)trans->tx_buffer;
     header->sof = TRANS_TX_SOF;
     header->cmd_id = cmd_id;
     header->payload_len = len;

@@ -8,6 +8,7 @@ void board_config()
     pwm_device_init();
     adc_init();
     usart1_manage_init();
+    usart2_manage_init();
     usart3_manage_init();
 }
 

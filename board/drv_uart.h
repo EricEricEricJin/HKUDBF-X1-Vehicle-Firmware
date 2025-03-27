@@ -29,6 +29,8 @@
 #define USART1_TX_BUFFER_SIZE (256)
 #define USART1_TX_FIFO_SIZE (512)
 
+#define USART2_RX_BUFFER_SIZE (256)
+
 #define USART3_RX_BUFFER_SIZE (512)
 #define USART3_TX_BUFFER_SIZE (512)
 #define USART3_TX_FIFO_SIZE (2048)
@@ -63,12 +65,14 @@ void usart_rx_callback_register(usart_manage_obj_t *m_obj, usart_call_back_t fun
 int32_t usart_transmit(usart_manage_obj_t *m_obj, uint8_t *buf, uint16_t len);
 
 void usart1_manage_init(void);
+void usart2_manage_init(void);
 void usart3_manage_init(void);
 
 void usart1_transmit(uint8_t *buff, uint16_t len);
 void usart3_transmit(uint8_t *buff, uint16_t len);
 
 void usart1_rx_callback_register(usart_call_back_t fun);
+void usart2_rx_callback_register(usart_call_back_t fun);
 void usart3_rx_callback_register(usart_call_back_t fun);
 // void usart3_idle_callback(void);
 

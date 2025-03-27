@@ -13,7 +13,7 @@
 
 #include "plane_task.h"
 
-#define TX_PERIOD 200
+#define TX_PERIOD 100
 
 struct transceiver transceiver;
 
