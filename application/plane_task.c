@@ -20,22 +20,27 @@ struct plane plane;
 
 struct plane_info plane_info;
 
+#define AIL_ZERO 0
+#define RUD_L_ZERO (-17)
+#define RUD_R_ZERO (11)
+#define ELE_ZERO (-10)
+
 struct plane_param plane_param = {
     .servo_params[PLANE_SERVO_AILERON] = {
         .ccr = SERVO_1_CCR, .type = SERVO_180DEG,
-        .zero_deg = -5, .min_deg = -45 - 5, .max_deg = 45 - 5
+        .zero_deg = AIL_ZERO, .min_deg = -45 + AIL_ZERO, .max_deg = 45 + AIL_ZERO
     },
     .servo_params[PLANE_SERVO_RUDDER_L] = {
         .ccr = SERVO_2_CCR, .type = SERVO_180DEG,
-        .zero_deg = -13, .min_deg = -45-13, .max_deg = 45-13
+        .zero_deg = RUD_L_ZERO, .min_deg = -45 + RUD_L_ZERO, .max_deg = 45 + RUD_L_ZERO
     },
     .servo_params[PLANE_SERVO_RUDDER_R] = {
         .ccr = SERVO_3_CCR, .type = SERVO_180DEG,
-        .zero_deg = 8, .min_deg = -45+8, .max_deg = 45+8
+        .zero_deg = RUD_R_ZERO, .min_deg = -45 + RUD_R_ZERO, .max_deg = 45 + RUD_R_ZERO
     },
     .servo_params[PLANE_SERVO_ELEVATOR] = {
         .ccr = SERVO_4_CCR, .type = SERVO_180DEG,
-        .zero_deg = 0, .min_deg = 45, .max_deg = -45
+        .zero_deg = ELE_ZERO, .min_deg = 45 + ELE_ZERO, .max_deg = -45 + ELE_ZERO
     },
 
     .direct_roll_coeff = 45, .direct_pitch_coeff = 45, .direct_yaw_coeff = 45,
