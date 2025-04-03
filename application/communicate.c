@@ -13,7 +13,7 @@
 
 #include "plane_task.h"
 
-#define TX_PERIOD 100
+#define TX_PERIOD (100)
 
 struct transceiver transceiver;
 
@@ -79,9 +79,9 @@ __NO_RETURN void communicate_rx_task(void *argument)
 }
 __NO_RETURN void communicate_tx_task(void *argument)
 {
-    det_cnt = 0;
+    // det_cnt = 0;
 
-    uint8_t det_sw1_ff = GET_DET_SW1();
+    // uint8_t det_sw1_ff = GET_DET_SW1();
 
     struct sensor_data_export tx_sensor_data;
     struct servo_fdbk servo_fdbk;
@@ -95,12 +95,10 @@ __NO_RETURN void communicate_tx_task(void *argument)
         tx_sensor_data.rudder_r = servo_fdbk.rudder_r;
         tx_sensor_data.elevator = servo_fdbk.elevator;
         
-        if (GET_DET_SW1() == DET_SW_DETACHED && det_sw1_ff == DET_SW_ATTACHED)
-            det_cnt++;
-        det_sw1_ff = GET_DET_SW1();
-        tx_sensor_data.state = det_cnt;
-
-        // todo: seperate sensor_data and servo_fdbk for clearity
+        // if (GET_DET_SW1() == DET_SW_DETACHED && det_sw1_ff == DET_SW_ATTACHED)
+        //     det_cnt++;
+        // det_sw1_ff = GET_DET_SW1();
+        // tx_sensor_data.state = det_cnt;
 
         transceiver_tx_transmit(&transceiver, (uint8_t*)&tx_sensor_data, DATA_ID_SENSOR_EXPORT, sizeof(struct sensor_data_export));
         osDelay(TX_PERIOD);

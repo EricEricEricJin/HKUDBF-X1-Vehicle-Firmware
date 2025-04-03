@@ -9,6 +9,8 @@
 #include "plane.h"
 #include "sensor_task.h"
 
+#include "strobe.h"
+
 #include "log.h"
 
 struct cmd_stick_val stick_val = {0};
@@ -20,9 +22,25 @@ struct plane plane;
 
 struct plane_info plane_info;
 
+struct strobe strobe_left = {
+    .ccr = LED_LEFT_CCR,
+    .phase = 0,
+    .period = 1000,
+    .ramp = 0,
+    .state = DISABLE
+};
+
+struct strobe strobe_right = {
+    .ccr = LED_RIGHT_CCR,
+    .phase = 500,
+    .period = 1000,
+    .ramp = 0,
+    .state = DISABLE
+};
+
 #define AIL_ZERO 0
-#define RUD_L_ZERO (-17)
-#define RUD_R_ZERO (11)
+#define RUD_L_ZERO (-9)
+#define RUD_R_ZERO (19)
 #define ELE_ZERO (-10)
 
 struct plane_param plane_param = {
@@ -68,6 +86,7 @@ void update_stick_val(uint8_t *data, uint16_t len)
         stick_val.x / 32768.0f, 
         stick_val.y / 32768.0f,
         stick_val.z / 32768.0f);
+    SET_BOARD_LED_TOGGLE();
 }
 
 void update_opmode(uint8_t *data, uint16_t len)
@@ -121,6 +140,7 @@ struct communicate_recv_cmd plane_recv_cmd_table[] = {
     {CMD_ID_PID_PARAM, update_pid_param},
 };
 
+
 __NO_RETURN void plane_task(void *args)
 {
     plane_init(&plane, &plane_param);
@@ -130,6 +150,9 @@ __NO_RETURN void plane_task(void *args)
 
     // SET_BOARD_LED_ON();
     // uint32_t printtime = get_time_ms();
+
+    SET_BUZZER_OFF();
+    
     while (1)
     {
         get_decoded_sensor_data(&plane_sensor_data_decoded, osWaitForever);
@@ -142,6 +165,20 @@ __NO_RETURN void plane_task(void *args)
         
         plane_set_sensor_data(&plane, plane_sensor_data_decoded.jy901_data.roll, plane_sensor_data_decoded.jy901_data.pitch, plane_sensor_data_decoded.jy901_data.yaw);
         plane_calculate(&plane);
+
+        // pwm_set_value(LED_LEFT_CCR, UINT16_MAX);
+        // pwm_set_value(LED_RIGHT_CCR, UINT16_MAX);
+
+        if (plane_sensor_data_decoded.det_cnt > 0)
+        {
+            strobe_set(&strobe_left, STROBE_ENABLE);        
+            strobe_set(&strobe_right, STROBE_ENABLE);
+            SET_BUZZER_ON();
+        }
+
+        strobe_update(&strobe_left);
+        strobe_update(&strobe_right);
+
         osDelay(5);
         // SET_BOARD_LED_ON();
         // osDelay(500);

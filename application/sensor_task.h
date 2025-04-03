@@ -14,6 +14,7 @@ struct sensor_data_decoded
 {
     struct jy901_data_decoded jy901_data;
     struct bmp280_data bmp280_data;
+    int det_cnt;
 };
 
 __NO_RETURN void sensor_task(void* args);

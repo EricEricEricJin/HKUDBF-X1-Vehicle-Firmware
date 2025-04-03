@@ -61,6 +61,8 @@ void Error_Handler(void);
 #define BOARD_BUTTON_GPIO_Port GPIOB
 #define DET_SW1_Pin GPIO_PIN_10
 #define DET_SW1_GPIO_Port GPIOB
+#define BUZZER_Pin GPIO_PIN_6
+#define BUZZER_GPIO_Port GPIOC
 #define BOARD_LED_Pin GPIO_PIN_10
 #define BOARD_LED_GPIO_Port GPIOA
 

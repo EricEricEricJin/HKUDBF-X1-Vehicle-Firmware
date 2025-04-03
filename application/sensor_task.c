@@ -39,6 +39,9 @@ const osMutexAttr_t sensor_mutex_attr = {
 struct gps gps;
 struct gps_pvt_data gps_pvt_data;
 
+int det_sw_ff;
+int det_cnt = 0;
+
 
 uint32_t usart2_callback(uint8_t *buf, uint16_t len)
 {
@@ -72,12 +75,18 @@ __NO_RETURN void sensor_task(void *args)
         bmp280_update(&bmp280);
 
         // gps_unpack_fifo_data(&gps);
-
-
+        
         osMutexAcquire(sensor_mux_id, osWaitForever);
+
+        if (GET_DET_SW1() == DET_SW_DETACHED && det_sw_ff == DET_SW_ATTACHED)
+            det_cnt++;
+        det_sw_ff = GET_DET_SW1();
+
         jy901_decode(&jy901.raw_data, &jy901_data_decoded);
+
         memcpy(&jy901_data_raw, &jy901.raw_data, sizeof(struct jy901_data_raw));
         memcpy(&bmp280_data, &bmp280.data, sizeof(struct bmp280_data));
+
         osMutexRelease(sensor_mux_id);
         
         adc_convert();
@@ -95,6 +104,7 @@ void get_decoded_sensor_data(sensor_data_decoded_t data, uint32_t timeout)
     osMutexAcquire(sensor_mux_id, timeout);
     memcpy(&data->jy901_data, &jy901_data_decoded, sizeof(struct jy901_data_decoded));
     memcpy(&data->bmp280_data, &bmp280.data, sizeof(struct bmp280_data));
+    data->det_cnt = det_cnt;
     osMutexRelease(sensor_mux_id);
 }
 
@@ -125,6 +135,8 @@ void get_export_sensor_data(sensor_data_export_t data, uint32_t timeout)
     //     SET_BOARD_LED_ON();
     // else
     //     SET_BOARD_LED_OFF();   
+
+    data->state = (uint8_t)det_cnt;
     
     osMutexRelease(sensor_mux_id);
     data->volt_bat = adc_get_mv();

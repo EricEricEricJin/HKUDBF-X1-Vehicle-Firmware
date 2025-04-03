@@ -50,8 +50,8 @@ int jy901_update(jy901_t dev)
     i2c_read_mem_16(&dev->i2c_dev, 0x39, dev->raw_data.w_z);
 
     
-    i2c_read_mem_16(&dev->i2c_dev, 0x3d, dev->raw_data.roll);
-    i2c_read_mem_16(&dev->i2c_dev, 0x3e, dev->raw_data.pitch);
+    i2c_read_mem_16(&dev->i2c_dev, 0x3d, dev->raw_data.pitch);
+    i2c_read_mem_16(&dev->i2c_dev, 0x3e, dev->raw_data.roll);
     i2c_read_mem_16(&dev->i2c_dev, 0x3f, dev->raw_data.yaw);
     
     // printf("IMU update!\n");

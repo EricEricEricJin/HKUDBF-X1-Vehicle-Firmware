@@ -136,6 +136,7 @@ component/bmp280.c \
 component/gps.c \
 component/jy901.c \
 component/servo.c \
+component/strobe.c \
 component/transceiver.c \
 support/event_mgr.c \
 support/fifo.c \

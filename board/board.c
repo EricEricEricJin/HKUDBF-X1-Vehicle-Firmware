@@ -5,6 +5,7 @@
 void board_config()
 {
     SET_BOARD_LED_OFF();
+    SET_BUZZER_OFF();
     pwm_device_init();
     adc_init();
     usart1_manage_init();
