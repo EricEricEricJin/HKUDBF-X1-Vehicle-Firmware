@@ -80,6 +80,7 @@ Core/Src/app_freertos.c \
 Core/Src/dma.c \
 Core/Src/gpio.c \
 Core/Src/i2c.c \
+Core/Src/iwdg.c \
 Core/Src/main.c \
 Core/Src/stm32g4xx_hal_msp.c \
 Core/Src/stm32g4xx_hal_timebase_tim.c \
@@ -102,6 +103,7 @@ Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_i2c.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_i2c_ex.c \
+Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_iwdg.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr_ex.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc.c \

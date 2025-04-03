@@ -1,6 +1,8 @@
 #include "main.h"
 #include "cmsis_os.h"
 
+#include "iwdg.h"
+
 #include "board.h"
 
 #include "communicate.h"
@@ -10,6 +12,8 @@
 #include "sensor_task.h"
 
 #include "strobe.h"
+
+
 
 #include "log.h"
 
@@ -152,6 +156,8 @@ __NO_RETURN void plane_task(void *args)
     // uint32_t printtime = get_time_ms();
 
     SET_BUZZER_OFF();
+
+    uint32_t buzz_toggle_time = 0;
     
     while (1)
     {
@@ -173,11 +179,19 @@ __NO_RETURN void plane_task(void *args)
         {
             strobe_set(&strobe_left, STROBE_ENABLE);        
             strobe_set(&strobe_right, STROBE_ENABLE);
-            SET_BUZZER_ON();
+            // SET_BUZZER_ON();
+
+            if (get_time_ms() - buzz_toggle_time > 500)
+            {
+                SET_BUZZER_TOGGLE();
+                buzz_toggle_time = get_time_ms();
+            }
         }
 
         strobe_update(&strobe_left);
         strobe_update(&strobe_right);
+
+        HAL_IWDG_Refresh(&hiwdg);
 
         osDelay(5);
         // SET_BOARD_LED_ON();
