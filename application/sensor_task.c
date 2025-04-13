@@ -129,13 +129,6 @@ void get_export_sensor_data(sensor_data_export_t data, uint32_t timeout)
     data->yaw = jy901.raw_data.yaw;
     data->pressure = export_pressure(bmp280_data.pressure);
     data->temperature = export_temperature(bmp280_data.temperature);
-    // log_i("temp = %f", bmp280_data.temperature);
-    // data->state = GET_DET_SW1() << 7;
-    // if (GET_DET_SW1() == DET_SW_DETACHED)
-    //     SET_BOARD_LED_ON();
-    // else
-    //     SET_BOARD_LED_OFF();   
-
     data->state = (uint8_t)det_cnt;
     
     osMutexRelease(sensor_mux_id);

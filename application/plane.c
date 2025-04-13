@@ -17,6 +17,9 @@ void plane_init(plane_t plane, plane_param_t param)
     plane->direct_yaw_coeff = param->direct_yaw_coeff;
     plane->lockatt_roll_coeff = param->lockatt_roll_coeff;
     plane->lockatt_pitch_coeff = param->lockatt_pitch_coeff;
+    plane->autopilot_roll_coeff = param->autopilot_roll_coeff;
+    plane->autopilot_pitch_coeff = param->autopilot_pitch_coeff;
+    plane->autopilot_yaw_coeff = param->autopilot_yaw_coeff;
     
     // initialize servos
     for (int i = 0; i < PLANE_SERVO_MAX_NUM; i++)
@@ -38,6 +41,14 @@ void plane_init(plane_t plane, plane_param_t param)
         param->pid_param_roll.p,
         param->pid_param_roll.i,
         param->pid_param_roll.d
+    );
+    pid_struct_init(
+        &plane->pid_yaw, 
+        param->pid_param_yaw.max_out,
+        param->pid_param_yaw.integral_limit,
+        param->pid_param_yaw.p,
+        param->pid_param_yaw.i,
+        param->pid_param_yaw.d
     );
         
     plane->opmode = PLANE_OPMODE_OFF;
@@ -116,6 +127,7 @@ void plane_calculate(plane_t plane)
         break;
 
         case PLANE_OPMODE_LOCKATT:
+        case PLANE_OPMODE_AUTOPILOT:
         {
             // get sensor
             osMutexAcquire(plane->sensor_data_mutex_id, osWaitForever);
@@ -124,21 +136,28 @@ void plane_calculate(plane_t plane)
             float yaw = plane->yaw;
             osMutexRelease(plane->sensor_data_mutex_id);
 
-            float target_roll = plane->lockatt_roll_coeff * stick_x;
-            float target_pitch = plane->lockatt_pitch_coeff * stick_y;
+            float target_roll, target_pitch, target_yaw;
+            if (plane->opmode == PLANE_OPMODE_LOCKATT)
+            {
+                target_roll = plane->lockatt_roll_coeff * stick_x;
+                target_pitch = plane->lockatt_pitch_coeff * stick_y;
+            }
+            else 
+            {
+                target_roll = plane->autopilot_roll_coeff * stick_x;
+                target_pitch = plane->autopilot_pitch_coeff * stick_y;
+                target_yaw = plane->autopilot_yaw_coeff * stick_z;
+            }
 
             // calculate PID
             osMutexAcquire(plane->pid_param_mutex_id, osWaitForever);
             deg_aileron = pid_calculate(&plane->pid_roll, roll, target_roll);
             deg_elevator = pid_calculate(&plane->pid_pitch, pitch, target_pitch);
+            deg_rudder = pid_calculate(&plane->pid_yaw, yaw, target_yaw);
             osMutexRelease(plane->pid_param_mutex_id);
-            deg_rudder = plane->direct_yaw_coeff * stick_z;
-        }
-        break;
-        
-        case PLANE_OPMODE_AUTOPILOT:
-        {
-            // todo
+            
+            if (plane->opmode == PLANE_OPMODE_LOCKATT)
+                deg_rudder = plane->direct_yaw_coeff * stick_z;
         }
         break;
 
@@ -150,7 +169,6 @@ void plane_calculate(plane_t plane)
         servo_set_deg_trimmed(&plane->servos[PLANE_SERVO_ELEVATOR], deg_elevator);
         servo_set_deg_trimmed(&plane->servos[PLANE_SERVO_RUDDER_L], deg_rudder);
         servo_set_deg_trimmed(&plane->servos[PLANE_SERVO_RUDDER_R], deg_rudder);
-
     }    
 }
 

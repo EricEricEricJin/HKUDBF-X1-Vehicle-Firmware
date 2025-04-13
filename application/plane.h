@@ -29,9 +29,10 @@ struct plane {
 
     float direct_roll_coeff, direct_pitch_coeff, direct_yaw_coeff;
     float lockatt_roll_coeff, lockatt_pitch_coeff;
+    float autopilot_roll_coeff, autopilot_pitch_coeff, autopilot_yaw_coeff;
     
     struct servo servos[PLANE_SERVO_MAX_NUM];
-    struct pid  pid_pitch, pid_roll;
+    struct pid  pid_pitch, pid_roll, pid_yaw;
 
     plane_opmode_t opmode;
     float stick_x, stick_y, stick_z;
@@ -45,7 +46,8 @@ struct plane_param {
     struct servo_param servo_params[PLANE_SERVO_MAX_NUM]; 
     float direct_roll_coeff, direct_pitch_coeff, direct_yaw_coeff;
     float lockatt_roll_coeff, lockatt_pitch_coeff;
-    struct pid_param pid_param_pitch, pid_param_roll;
+    float autopilot_roll_coeff, autopilot_pitch_coeff, autopilot_yaw_coeff;
+    struct pid_param pid_param_pitch, pid_param_roll, pid_param_yaw;
 };
 
 typedef struct plane_info* plane_info_t;

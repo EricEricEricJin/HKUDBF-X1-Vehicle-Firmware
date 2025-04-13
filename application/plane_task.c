@@ -12,10 +12,11 @@
 #include "sensor_task.h"
 
 #include "strobe.h"
-
-
-
 #include "log.h"
+
+#include "appcfg.h"
+
+
 
 struct cmd_stick_val stick_val = {0};
 
@@ -66,31 +67,34 @@ struct plane_param plane_param = {
     },
 
     .direct_roll_coeff = 45, .direct_pitch_coeff = 45, .direct_yaw_coeff = 45,
-
-    .lockatt_roll_coeff = 45, .lockatt_pitch_coeff = 45,  // todo
+    .lockatt_roll_coeff = 45, .lockatt_pitch_coeff = 45, 
+    .autopilot_roll_coeff = 45, .autopilot_pitch_coeff = 45, .autopilot_yaw_coeff = 360,
 
     // PID fdbk, ref, out all in degree unit
 
     .pid_param_pitch = {
-        .p = 0.5f,
+        .p = 1.0f,
         .max_out = 45,
     },
     .pid_param_roll = {
         .p = 0.5f,
         .max_out = 45,
-    }
+    },
+    .pid_param_yaw = {
+        .p = 0.5f,
+        .max_out = 45,
+    },
 };
 
 void update_stick_val(uint8_t *data, uint16_t len)
 {
-    // SET_BOARD_LED_ON();
     memcpy(&stick_val, data, sizeof(stick_val));
-    plane_set_stick_val(
-        &plane, 
+    plane_set_stick_val( &plane, 
         stick_val.x / 32768.0f, 
         stick_val.y / 32768.0f,
-        stick_val.z / 32768.0f);
-    SET_BOARD_LED_TOGGLE();
+        stick_val.z / 32768.0f
+    );
+    // SET_BOARD_LED_TOGGLE();
 }
 
 void update_opmode(uint8_t *data, uint16_t len)
@@ -145,59 +149,150 @@ struct communicate_recv_cmd plane_recv_cmd_table[] = {
 };
 
 
+typedef enum {
+    PLANE_TASK_IDLE,
+    PLANE_TASK_ATTACHED,
+    PLANE_TASK_STABLE,
+    PLANE_TASK_TURN,
+    PLANE_TASK_DROP,
+} plane_task_state_t;
+
+typedef enum {
+    FLY_DIR_CW,
+    FLY_DIR_CCW,
+} fly_dir_t;
+
+fly_dir_t get_fly_dir(float release_mag_hdg)
+{
+    if (abs(release_mag_hdg - RWY_HDG_CW) < abs(release_mag_hdg - RWY_HDG_CCW))
+        return FLY_DIR_CW;
+    else
+        return FLY_DIR_CCW; 
+};
+
 __NO_RETURN void plane_task(void *args)
 {
     plane_init(&plane, &plane_param);
-    plane_set_opmode(&plane, PLANE_OPMODE_DIRECT);
 
-    communicate_register_recv_cmd(plane_recv_cmd_table, sizeof(plane_recv_cmd_table) / sizeof(plane_recv_cmd_table[0]));
-
-    // SET_BOARD_LED_ON();
-    // uint32_t printtime = get_time_ms();
+    plane_set_opmode(&plane, PLANE_OPMODE_IDLE);
+    #ifndef AIAA_M3
+        communicate_register_recv_cmd(plane_recv_cmd_table, sizeof(plane_recv_cmd_table) / sizeof(plane_recv_cmd_table[0]));
+    #endif
 
     SET_BUZZER_OFF();
 
     uint32_t buzz_toggle_time = 0;
+
     
+    plane_task_state_t state = PLANE_TASK_IDLE;
+    
+    fly_dir_t fly_dir;
+    int target_turned_hdg;
+
+    uint32_t detach_time = 0;
+    
+    uint32_t update_time = xTaskGetTickCount();
     while (1)
     {
+        // Update sensor data
         get_decoded_sensor_data(&plane_sensor_data_decoded, osWaitForever);
-        
-        // if (get_time_ms() - printtime > 1000)
-        // {
-        //     printtime = get_time_ms();
-        //     log_i("roll = %f, pitch = %f, yaw = %f", plane_sensor_data_decoded.jy901_data.roll, plane_sensor_data_decoded.jy901_data.pitch, plane_sensor_data_decoded.jy901_data.yaw);
-        // }
-        
         plane_set_sensor_data(&plane, plane_sensor_data_decoded.jy901_data.roll, plane_sensor_data_decoded.jy901_data.pitch, plane_sensor_data_decoded.jy901_data.yaw);
-        plane_calculate(&plane);
-
-        // pwm_set_value(LED_LEFT_CCR, UINT16_MAX);
-        // pwm_set_value(LED_RIGHT_CCR, UINT16_MAX);
-
-        if (plane_sensor_data_decoded.det_cnt > 0)
+        
+        // State machine:
+        // State Transition:
+        //  IDLE -- switch pressed / --> ATTACHED
+        //  ATTACHED -- switch released / --> STABLE
+        //  STABLE -- stable time out (2 seconds) / --> TURN
+        //  TURN -- target heading reached / --> DROP
+        // Output:
+        //  STABLE: rudder=0, aileron=PID(0), elevator=PID(STABLE_Y_VAL)
+        //  TURN: elevator=PID(TURN_Y_VAL), rudder=PID(target_yaw), roll=0.5*rudder
+        //  DROP: elevator=PID(DROP_Y_VAL), rudder=0, roll=0
+        switch (state)
         {
-            strobe_set(&strobe_left, STROBE_ENABLE);        
-            strobe_set(&strobe_right, STROBE_ENABLE);
-            // SET_BUZZER_ON();
-
-            if (get_time_ms() - buzz_toggle_time > 500)
+        case PLANE_TASK_IDLE:
+        {
+            if (GET_DET_SW1() == DET_SW_ATTACHED)
             {
-                SET_BUZZER_TOGGLE();
-                buzz_toggle_time = get_time_ms();
+                SET_BOARD_LED_ON();
+                state = PLANE_TASK_ATTACHED;
             }
         }
+        break;
 
+        case PLANE_TASK_ATTACHED:
+        {
+            if (GET_DET_SW1() == DET_SW_DETACHED)
+            {
+                // record mag heading 
+                fly_dir = get_fly_dir(plane_sensor_data_decoded.jy901_data.yaw);
+                target_turned_hdg = (fly_dir == FLY_DIR_CW) ? RWY_HDG_CW : RWY_HDG_CCW;
+                detach_time = get_time_ms();
+
+                plane_set_opmode(&plane, PLANE_OPMODE_LOCKATT);
+
+                SET_BOARD_LED_OFF();
+                strobe_set(&strobe_left, STROBE_ENABLE);
+                strobe_set(&strobe_right, STROBE_ENABLE);
+
+                state = PLANE_TASK_STABLE;
+            }
+        }
+        break;
+
+        case PLANE_TASK_STABLE:
+        {
+            plane_set_stick_val(&plane, 0, STABLE_Y_VAL, 0);
+            if (get_time_ms() - detach_time > STABLE_TIME)
+            {
+                plane_set_opmode(&plane, PLANE_OPMODE_LOCKATT);
+                state = PLANE_TASK_TURN;
+            }
+        }
+        break;
+
+        case PLANE_TASK_TURN:
+        {
+            float x_val, y_val, z_val;
+
+            // rudder    
+            z_val = (fly_dir == FLY_DIR_CW ? RWY_HDG_CW : RWY_HDG_CCW) / 360.0f;
+            if (abs(plane_sensor_data_decoded.jy901_data.yaw - target_turned_hdg) < 20.0f)
+            {
+                plane_set_opmode(&plane, PLANE_OPMODE_LOCKATT);
+                state = PLANE_TASK_DROP;
+            }
+            
+            // roll
+            plane_get_info(&plane, &plane_info);
+            x_val = plane_info.deg_rudder / 2.0f;
+
+            // pitch
+            y_val = TURN_Y_VAL;
+            plane_set_stick_val(&plane, x_val, y_val, z_val);
+        }
+        break;
+
+        case PLANE_TASK_DROP:
+        {
+            plane_set_stick_val(&plane, 0, DROP_Y_VAL, 0);
+        }
+        break;
+        
+        default:
+            break;
+        }
+
+        // All none-blocking updates
+        plane_calculate(&plane);
         strobe_update(&strobe_left);
         strobe_update(&strobe_right);
 
+        // Feed the doggy
         HAL_IWDG_Refresh(&hiwdg);
 
-        osDelay(5);
-        // SET_BOARD_LED_ON();
-        // osDelay(500);
-        // SET_BOARD_LED_OFF();
-        // osDelay(500);
+        // Delay 5ms
+        vTaskDelayUntil(&update_time, 5);
     }
 }
 
