@@ -7,11 +7,11 @@
 #include "stdint.h"
 
 typedef enum {
-    PLANE_OPMODE_OFF,
-    PLANE_OPMODE_IDLE,
-    PLANE_OPMODE_DIRECT,
-    PLANE_OPMODE_LOCKATT,
-    PLANE_OPMODE_AUTOPILOT,
+    PLANE_OPMODE_OFF = 0,
+    PLANE_OPMODE_IDLE = 1,
+    PLANE_OPMODE_DIRECT = 2,
+    PLANE_OPMODE_LOCKATT = 3,
+    PLANE_OPMODE_AUTOPILOT = 4,
 } plane_opmode_t;
 
 typedef enum {

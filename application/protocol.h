@@ -44,6 +44,7 @@ struct __attribute__((__packed__)) sensor_data_export
 
     int8_t elevator, aileron, rudder_l, rudder_r;
     uint8_t state;
+    uint8_t opmode;
 };
 
 #define DATA_ID_SERVO_FDBK (0x04)

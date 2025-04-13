@@ -94,6 +94,7 @@ __NO_RETURN void communicate_tx_task(void *argument)
         tx_sensor_data.rudder_l = servo_fdbk.rudder_l;
         tx_sensor_data.rudder_r = servo_fdbk.rudder_r;
         tx_sensor_data.elevator = servo_fdbk.elevator;
+        tx_sensor_data.opmode = servo_fdbk.mode;
         
         // if (GET_DET_SW1() == DET_SW_DETACHED && det_sw1_ff == DET_SW_ATTACHED)
         //     det_cnt++;
