@@ -215,6 +215,7 @@ __NO_RETURN void plane_task(void *args)
             if (GET_DET_SW1() == DET_SW_ATTACHED)
             {
                 SET_BOARD_LED_ON();
+                log_i("IDLE->ATTACHED");
                 state = PLANE_TASK_ATTACHED;
             }
         }
@@ -224,6 +225,7 @@ __NO_RETURN void plane_task(void *args)
         {
             if (GET_DET_SW1() == DET_SW_DETACHED)
             {
+                log_i("ATTACHED->STABLE");
                 // record mag heading 
                 fly_dir = get_fly_dir(plane_sensor_data_decoded.jy901_data.yaw);
                 target_turned_hdg = (fly_dir == FLY_DIR_CW) ? RWY_HDG_CW : RWY_HDG_CCW;
@@ -245,6 +247,7 @@ __NO_RETURN void plane_task(void *args)
             plane_set_stick_val(&plane, 0, STABLE_Y_VAL, 0);
             if (get_time_ms() - detach_time > STABLE_TIME)
             {
+                log_i("STABLE->TURN");
                 plane_set_opmode(&plane, PLANE_OPMODE_LOCKATT);
                 state = PLANE_TASK_TURN;
             }
@@ -259,6 +262,7 @@ __NO_RETURN void plane_task(void *args)
             z_val = (fly_dir == FLY_DIR_CW ? RWY_HDG_CW : RWY_HDG_CCW) / 360.0f;
             if (abs(plane_sensor_data_decoded.jy901_data.yaw - target_turned_hdg) < 20.0f)
             {
+                log_i("TURN->DROP");
                 plane_set_opmode(&plane, PLANE_OPMODE_LOCKATT);
                 state = PLANE_TASK_DROP;
             }
